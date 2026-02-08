@@ -1,0 +1,78 @@
+name: GNOME Shell Version Check
+
+on:
+  schedule:
+    - cron: '0 9 1,15 * *'  # 1st and 15th of each month at 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for new GNOME Shell versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Fetch GNOME Shell tags from GitLab
+          TAGS=$(curl -sf "https://gitlab.gnome.org/api/v4/projects/GNOME%2Fgnome-shell/repository/tags?per_page=100" \
+            | jq -r '.[].name')
+
+          # Extract unique major versions (e.g., "45.1" → "45"), filter numeric only
+          RELEASED=$(echo "$TAGS" \
+            | grep -oP '^\d+' \
+            | sort -un)
+
+          # Read our supported versions from metadata.json
+          SUPPORTED=$(jq -r '.["shell-version"][]' metadata.json)
+
+          # Find the highest released major version
+          MAX_RELEASED=$(echo "$RELEASED" | tail -1)
+
+          # Find the highest version we support
+          MAX_SUPPORTED=$(echo "$SUPPORTED" | sort -n | tail -1)
+
+          echo "Highest released GNOME Shell: $MAX_RELEASED"
+          echo "Highest we support: $MAX_SUPPORTED"
+
+          if [ "$MAX_RELEASED" -le "$MAX_SUPPORTED" ]; then
+            echo "Up to date."
+            exit 0
+          fi
+
+          # Collect all new versions we're missing
+          NEW_VERSIONS=""
+          for v in $RELEASED; do
+            if [ "$v" -gt "$MAX_SUPPORTED" ] && ! echo "$SUPPORTED" | grep -qx "$v"; then
+              NEW_VERSIONS="$NEW_VERSIONS $v"
+            fi
+          done
+          NEW_VERSIONS=$(echo "$NEW_VERSIONS" | xargs)
+
+          echo "New versions to add: $NEW_VERSIONS"
+
+          # Check if an issue already exists
+          EXISTING=$(gh issue list --label "gnome-version" --state open --json number --jq 'length')
+          if [ "$EXISTING" -gt "0" ]; then
+            echo "Open issue already exists, skipping."
+            exit 0
+          fi
+
+          # Open issue
+          gh issue create \
+            --title "Add GNOME Shell $NEW_VERSIONS to supported versions" \
+            --label "gnome-version" \
+            --body "New GNOME Shell major version(s) detected: **$NEW_VERSIONS**
+
+          Current supported versions in \`metadata.json\`: $(jq -c '.["shell-version"]' metadata.json)
+
+          **Action needed:**
+          - Update \`shell-version\` array in \`metadata.json\`
+          - Test extension on GNOME $NEW_VERSIONS if possible
+          - Run \`make install\` and verify
+          - Update CHANGELOG.md"

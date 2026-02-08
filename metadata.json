@@ -1,0 +1,9 @@
+{
+  "name": "Auto On Top",
+  "description": "Automatically pin windows to always-on-top based on configurable title and WM class rules.",
+  "uuid": "auto-on-top@frederikb.github.com",
+  "version": 1,
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "url": "https://github.com/frederikb96/auto-on-top",
+  "settings-schema": "org.gnome.shell.extensions.auto-on-top"
+}

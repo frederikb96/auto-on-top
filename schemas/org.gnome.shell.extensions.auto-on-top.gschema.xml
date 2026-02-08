@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.auto-on-top" path="/org/gnome/shell/extensions/auto-on-top/">
+    <key name="rules" type="as">
+      <default>[]</default>
+      <summary>Auto-pin rules</summary>
+      <description>
+        List of rules for windows to automatically pin on top.
+        Format: "type:pattern" where type is "title" or "wm_class".
+        Wrap pattern in slashes for regex: "title:/^My App/".
+        Plain patterns use substring matching.
+      </description>
+    </key>
+  </schema>
+</schemalist>
