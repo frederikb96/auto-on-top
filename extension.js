@@ -1,12 +1,17 @@
 import GLib from 'gi://GLib';
+import Meta from 'gi://Meta';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const RULE_TYPES = ['title', 'wm_class'];
 
+function _isManageable(window) {
+    return window.get_window_type() === Meta.WindowType.NORMAL;
+}
+
 function _getAllWindows() {
     return global.get_window_actors()
         .map(a => a.meta_window)
-        .filter(w => w != null);
+        .filter(w => w != null && _isManageable(w));
 }
 
 export default class AutoOnTopExtension extends Extension {
@@ -144,6 +149,9 @@ export default class AutoOnTopExtension extends Extension {
     }
 
     _applyRulesToWindow(window) {
+        if (!_isManageable(window))
+            return;
+
         for (const rule of this._parsedRules) {
             if (!this._matchesPattern(window, rule.target))
                 continue;
@@ -162,6 +170,9 @@ export default class AutoOnTopExtension extends Extension {
     }
 
     _onWindowCreated(window) {
+        if (!_isManageable(window))
+            return;
+
         this._applyRulesToWindow(window);
         this._trackWindow(window);
     }
@@ -179,6 +190,12 @@ export default class AutoOnTopExtension extends Extension {
     _onFocusChanged() {
         const focused = global.display.focus_window;
         if (!focused)
+            return;
+
+        // Menus, popups and tooltips take focus while they are open. Treating
+        // them as a focus change would unpin conditional targets, and the
+        // restack that follows dismisses the popup, so leave the state as is.
+        if (!_isManageable(focused))
             return;
 
         const allWindows = _getAllWindows();

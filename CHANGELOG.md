@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Only manage normal toplevel windows. Menus, popups and tooltips take focus
+  while open, which made conditional rules unpin and lower their target. On
+  Wayland the resulting restack cancels the popup grab, so browser extension
+  flyouts and similar overlays closed on their own after a short flicker.
+
 ## [1.0.0] - 2026-02-08
 
 ### Added
