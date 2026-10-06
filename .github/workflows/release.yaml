@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Validate schema
         run: glib-compile-schemas --strict schemas/
@@ -33,7 +33,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: auto-on-top.zip
           prerelease: ${{ steps.prerelease.outputs.is_prerelease }}
