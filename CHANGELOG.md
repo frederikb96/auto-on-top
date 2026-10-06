@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-06
+
 ### Fixed
 
 - Only manage normal toplevel windows. Menus, popups and tooltips take focus
   while open, which made conditional rules unpin and lower their target. On
   Wayland the resulting restack cancels the popup grab, so browser extension
   flyouts and similar overlays closed on their own after a short flicker.
+
+### Changed
+
+- Bump `actions/checkout` to v7 and `softprops/action-gh-release` to v3
 
 ## [1.0.0] - 2026-02-08
 
