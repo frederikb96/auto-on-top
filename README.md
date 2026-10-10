@@ -63,6 +63,15 @@ Use GNOME Looking Glass (`Alt+F2` → `lg` → Windows tab) to inspect window ti
 
 GNOME Shell 45–50
 
+## Development
+
+```bash
+glib-compile-schemas --strict schemas/
+node --check extension.js && node --check prefs.js
+```
+
+`make install` recompiles the schema; on Wayland, log out and back in before a new extension version is picked up. Pull requests run the schema, metadata and syntax checks in CI.
+
 ## License
 
 MIT
